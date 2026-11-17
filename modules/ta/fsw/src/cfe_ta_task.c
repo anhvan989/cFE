@@ -667,6 +667,7 @@ int32 CFE_TA_GetTaskAffinityCmd(const CFE_TA_GetTaskAffinityCmd_t *data)
 int32 CFE_TA_SetStartupAffinity(const char *taskname)
 {
     int32       Status = CFE_SUCCESS;
+    int32       PriorityStatus = CFE_SUCCESS;
     OS_cpuset_t cpuget;
     osal_id_t   task_id = OS_OBJECT_ID_UNDEFINED;
 
@@ -692,6 +693,10 @@ int32 CFE_TA_SetStartupAffinity(const char *taskname)
                 OS_CPUSET_ZERO(&CFE_TA_CpuTaskAffinity[i].CpuMask);
                 OS_CPUSET_ZERO(&CFE_TA_CpuTaskAffinity[i].CpuFromOS);
                 CFE_TA_CpuTaskAffinity[i].Type = CFE_TA_Added;
+
+                /* Update the priority in the table to unused */
+                CFE_TA_CpuTaskAffinity[i].SetPriority = false; 
+                CFE_TA_CpuTaskAffinity[i].Priority = 255;
 
                 /* Get the task affinity */
                 Status = OS_TaskAffinityGetAffinity(task_id, &cpuget);
@@ -788,6 +793,23 @@ int32 CFE_TA_SetStartupAffinity(const char *taskname)
                                          __func__,
                                          CFE_TA_CpuTaskAffinity[i].Type,
                                          taskname);
+                }
+
+                /* Set priority regardless of affinity */
+                if(CFE_TA_CpuTaskAffinity[i].SetPriority)
+                {
+                    PriorityStatus = OS_TaskSetPriority(task_id, CFE_TA_CpuTaskAffinity[i].Priority);
+                    if(PriorityStatus != OS_SUCCESS)
+                    {
+                        Status = CFE_TA_APP_PRIORITY_FAILED;
+                        CFE_TA_CpuTaskAffinity[i].Status = CFE_TA_Status_Error;
+                        CFE_TA_CpuTaskAffinity[i].SetPriority = false; /* Set priority to unused */
+                        
+                        CFE_ES_WriteToSysLog("%s: Could not set priority (%d) for (%s)\n",
+                                             __func__,
+                                             CFE_TA_CpuTaskAffinity[i].Priority,
+                                             taskname);
+                    }
                 }
                 break;
             }

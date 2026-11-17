@@ -73,6 +73,7 @@ int32 CFE_TA_CleanUpApp(uint32 AppId);
 #define CFE_TA_APP_SET_TASK_AFFINITY_FAILED     -3
 #define CFE_TA_APP_INVALID_TASK_AFFINITY_TYPE   -4
 #define CFE_TA_APP_TASK_STARTUP_AFFINITY_FAILED -5
+#define CFE_TA_APP_PRIORITY_FAILED              -6
 /** \} */
 
 /************************  Internal Structure Definitions  *****************************/

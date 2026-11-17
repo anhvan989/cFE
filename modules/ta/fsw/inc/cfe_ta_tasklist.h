@@ -67,6 +67,8 @@ typedef enum
 typedef struct
 {
     char             TaskName[CFE_MISSION_MAX_API_LEN];
+    bool             SetPriority;
+    osal_priority_t  Priority;
     OS_cpuset_t      CpuMask;
     OS_cpuset_t      CpuFromOS;
     CFE_TA_Mask_Type Type;
